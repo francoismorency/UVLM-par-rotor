@@ -1,0 +1,39 @@
+# Options en mode optimisé - La variable DEBUG est définie comme fausse
+OPTIM_FLAG = -O3 -DNDEBUG
+# Options en mode debug - La variable est DEBUG est définie comme vraie
+DEBUG_FLAG = -g -w -DDEBUG
+
+# Compilateur utilisé
+CXX = g++ -fopenmp $(OPTIM_FLAG)
+
+# On choisit comment on compile le fichier .c
+CXXFLAGS = -c -std=c++11
+
+#Pour pouvoir inclure Mex
+INCLUDE_MEX = -I$(MATLABHOME)/extern/include
+
+UVLM_2_Blade_Rotor_Axial: main.o
+	$(CXX) -o $@ $< -Wl,--no-undefined -Wl,-rpath-link, -L$(MATLABHOME)/bin/glnxa64 -lmx -leng
+
+main.o: main.cpp
+	$(CXX) $(CXXFLAGS) $(CFLAGS) -o $@ $< $(INCLUDE_MEX)
+
+clean:
+	rm -f *.o *~ *.out
+	rm -f *.csv
+	rm -f  UVLM_2_Blade_Rotor_Axial
+
+
+#$(INCLUDE_MEX) : Ajoute ce chemin aux répertoires dans lequels g++ ira chercher des fichiers header : engine.h
+
+#-L$(MATLABHOME)/bin/glnxa64 : Ajoute ce chemin aux répertoires dans lequels g++ ira chercher des librairies binaires lmx et leng
+
+#-lmx  : permet d'avoir accès à toute les fonctions commencant par mx : mxGetPr, mxCreateDoubleMatrix, mxArray, mxDestroyArray
+
+#-leng : permet d'avoir : engOpen, engEvalString, engGetVariable, engPutVariable, engClose
+
+#--no-undefined-Wl : Autoriser les symboles non résolus est un comportement « normal », où le code compilé peut faire référence à des fonctions qui sont déclarées mais non définies dans la même unité de traduction lors de la création d’une bibliothèque partagée.
+
+#-Wl : L’option du compilateur -Wl transmet des options supplémentaires à ld, l’éditeur de liens. Les options doivent être séparées par des virgules uniquement. L’option du compilateur -Wl peut être spécifiée plusieurs fois sur la ligne de commande.
+
+#-rpath-link : utile pour créer des liens
